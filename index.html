@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Asistencia</title>
-      
+        <!--  script de reCAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>  
 </head>
 <body>
     <h2>Formulario de Registro</h2>
@@ -20,7 +21,8 @@
 
         <label for="secretKey">Clave Secreta:</label><br>
         <input type="password" id="secretKey" name="secretKey" required><br><br>
-  
+             <!-- reCAPTCHA -->
+        <div class="g-recaptcha" data-sitekey="TU_CLAVE_DEL_SITIO"></div><br><br>
         <button type="submit">Registrar</button>
     </form>
 
@@ -35,32 +37,45 @@
             var comision = document.getElementById('comision').value;
             var email = document.getElementById('email').value;
             var secretKey = document.getElementById('secretKey').value;
+            var recaptchaResponse = grecaptcha.getResponse(); // Obtener la respuesta de reCAPTCHA
 
+            // Verificar que se haya completado reCAPTCHA
+            if (recaptchaResponse.length === 0) {
+                document.getElementById('statusMessage').innerHTML = "Por favor, confirma que no eres un robot.";
+                return;
+            }
+            console.log("Datos del formulario antes de enviarlos:", { dni, comision, email, secretKey });
             // Obtener la ubicación del usuario
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var lat = position.coords.latitude;
                     var lng = position.coords.longitude;
 
+                     // Registrar ubicación
+                    console.log("Ubicación obtenida:", { lat, lng });
                     // Construir la URL con los parámetros
                     var url = `https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbyk-Z1BDGIY8bpQ2w_ESzP6T4ST6wkmRXlrIRc6T6c3SX33Z71MQ-cUSwaDZS3fpXOqSA/exec?dni=${dni}&comision=${comision}&email=${email}&lat=${lat}&lng=${lng}&secretKey=${secretKey}`;
 
-                    // Hacer la solicitud al script de Google Apps
-                    fetch(url)
-                        .then(response => response.text())
-                        .then(data => {
-                            document.getElementById('statusMessage').innerHTML = "Registro exitoso";
-                        })
-                        .catch(error => {
-                            document.getElementById('statusMessage').innerHTML = "Hubo un error al registrar los datos.";
-                        });
-                }, function(error) {
-                    document.getElementById('statusMessage').innerHTML = "Error al obtener la ubicación. Por favor, permite el acceso a tu ubicación.";
-                });
-            } else {
-                document.getElementById('statusMessage').innerHTML = "La geolocalización no es soportada por este navegador.";
-            }
-        });
-    </script>
+      // Hacer la solicitud al script de Google Apps
+                fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log("Respuesta del servidor:", data); // Ver la respuesta completa del servidor
+                        document.getElementById('statusMessage').innerHTML = "Registro exitoso";
+                    })
+                    .catch(error => {
+                        console.log("Error al enviar datos:", error); // Ver error en la consola
+                        document.getElementById('statusMessage').innerHTML = "Hubo un error al registrar los datos.";
+                    });
+            }, function(error) {
+                console.log("Error al obtener ubicación:", error); // Ver error de geolocalización
+                document.getElementById('statusMessage').innerHTML = "Error al obtener la ubicación. Por favor, permite el acceso a tu ubicación.";
+            });
+        } else {
+            console.log("Geolocalización no soportada.");
+            document.getElementById('statusMessage').innerHTML = "La geolocalización no es soportada por este navegador.";
+        }
+    });
+</script>
 </body>
 </html>
