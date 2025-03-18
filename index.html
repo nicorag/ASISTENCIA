@@ -57,7 +57,7 @@
                     var url = `https://script.google.com/macros/s/AKfycbyWxmqlZEENZ3DQl69kwiPUNzRE9qHSaipEJ5UMDdiPTxBGuIlc9DlHlnJzuDaOY00aWw/exec?dni=${dni}&comision=${comision}&email=${email}&lat=${lat}&lng=${lng}&secretKey=${secretKey}`;
 
  // Hacer la solicitud al script de Google Apps
-            fetch(url)
+            fetch(url,
                 {
     method: 'GET',  // o 'POST'
     mode: 'cors',   // Usa 'no-cors' solo si no necesitas recibir la respuesta
