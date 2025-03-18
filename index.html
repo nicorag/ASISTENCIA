@@ -58,6 +58,10 @@
 
  // Hacer la solicitud al script de Google Apps
             fetch(url)
+                {
+    method: 'GET',  // o 'POST'
+    mode: 'cors',   // Usa 'no-cors' solo si no necesitas recibir la respuesta
+})
                 .then(response => {
                     // Verificar si la respuesta es exitosa
                     if (!response.ok) {
