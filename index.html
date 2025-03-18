@@ -22,7 +22,7 @@
         <label for="secretKey">Clave Secreta:</label><br>
         <input type="password" id="secretKey" name="secretKey" required><br><br>
              <!-- reCAPTCHA -->
-        <div class="g-recaptcha" data-sitekey="TU_CLAVE_DEL_SITIO"></div><br><br>
+        <div class="g-recaptcha" data-sitekey="6LcaePgqAAAAAI_PA8wnwMoLCot97an2tDfC2fDB"></div><br><br>
         <button type="submit">Registrar</button>
     </form>
 
@@ -54,7 +54,7 @@
                      // Registrar ubicación
                     console.log("Ubicación obtenida:", { lat, lng });
                     // Construir la URL con los parámetros
-                    var url = `https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbyk-Z1BDGIY8bpQ2w_ESzP6T4ST6wkmRXlrIRc6T6c3SX33Z71MQ-cUSwaDZS3fpXOqSA/exec?dni=${dni}&comision=${comision}&email=${email}&lat=${lat}&lng=${lng}&secretKey=${secretKey}`;
+                    var url = `https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbw2vwRxWG1UKNpw3XiILMtc6MXASkwggeeWS7NOILQ1oT0J61HYaVg40PJGAVN_j-mqEA/exec?dni=${dni}&comision=${comision}&email=${email}&lat=${lat}&lng=${lng}&secretKey=${secretKey}`;
 
       // Hacer la solicitud al script de Google Apps
                 fetch(url)
