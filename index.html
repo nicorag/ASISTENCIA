@@ -56,26 +56,32 @@
                     // Construir la URL con los parámetros
                     var url = `https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzb6Z85tZmCVg1fBJsoGVpxyMiVeCXdBYTbocLdys1Uflw6yEEubaiFeYYB-OD2V8U8Rg/exec?dni=${dni}&comision=${comision}&email=${email}&lat=${lat}&lng=${lng}&secretKey=${secretKey}`;
 
-      // Hacer la solicitud al script de Google Apps
-                fetch(url)
-                    .then(response => response.text())
-                    .then(data => {
-                        console.log("Respuesta del servidor:", data); // Ver la respuesta completa del servidor
-                        document.getElementById('statusMessage').innerHTML = "Registro exitoso";
-                    })
-                    .catch(error => {
-                        console.log("Error al enviar datos:", error); // Ver error en la consola
-                        document.getElementById('statusMessage').innerHTML = "Hubo un error al registrar los datos.";
-                    });
-            }, function(error) {
-                console.log("Error al obtener ubicación:", error); // Ver error de geolocalización
-                document.getElementById('statusMessage').innerHTML = "Error al obtener la ubicación. Por favor, permite el acceso a tu ubicación.";
-            });
-        } else {
-            console.log("Geolocalización no soportada.");
-            document.getElementById('statusMessage').innerHTML = "La geolocalización no es soportada por este navegador.";
-        }
-    });
+ // Hacer la solicitud al script de Google Apps
+            fetch(url)
+                .then(response => {
+                    // Verificar si la respuesta es exitosa
+                    if (!response.ok) {
+                        throw new Error("Error en la respuesta del servidor: " + response.statusText);
+                    }
+                    return response.text(); // Si la respuesta es de tipo texto
+                })
+                .then(data => {
+                    console.log("Respuesta del servidor:", data); // Ver la respuesta completa del servidor
+                    document.getElementById('statusMessage').innerHTML = "Registro exitoso";
+                })
+                .catch(error => {
+                    console.log("Error al enviar datos:", error); // Ver error en la consola
+                    document.getElementById('statusMessage').innerHTML = "Hubo un error al registrar los datos.";
+                });
+        }, function(error) {
+            console.log("Error al obtener ubicación:", error); // Ver error de geolocalización
+            document.getElementById('statusMessage').innerHTML = "Error al obtener la ubicación. Por favor, permite el acceso a tu ubicación.";
+        });
+    } else {
+        console.log("Geolocalización no soportada.");
+        document.getElementById('statusMessage').innerHTML = "La geolocalización no es soportada por este navegador.";
+    }
+});
 </script>
 </body>
 </html>
