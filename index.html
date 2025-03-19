@@ -56,8 +56,9 @@
 
             // Usamos fetch con POST para enviar los datos de forma más segura
             fetch(url, {
+                redirect: 'follow',
                 method: 'POST',
-                body: new URLSearchParams({
+                body: JSON.stringify({
                     dni: dni,
                     comision: comision,
                     email: email,
@@ -67,7 +68,7 @@
                     recaptchaResponse: recaptchaResponse
                 }),
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'text/plain;charset=utf-8'
                 }
             })
             .then(response => response.json())  // Asegúrate de que el script de Google Apps retorne una respuesta JSON
