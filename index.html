@@ -29,56 +29,62 @@
     <div id="statusMessage"></div>
 
     <script>
-        document.getElementById('registroForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+      document.getElementById('registroForm').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-            // Obtener los valores del formulario
-            var dni = document.getElementById('dni').value;
-            var comision = document.getElementById('comision').value;
-            var email = document.getElementById('email').value;
-            var secretKey = document.getElementById('secretKey').value;
-            var recaptchaResponse = grecaptcha.getResponse(); // Obtener la respuesta de reCAPTCHA
+    // Obtener los valores del formulario
+    var dni = document.getElementById('dni').value;
+    var comision = document.getElementById('comision').value;
+    var email = document.getElementById('email').value;
+    var secretKey = document.getElementById('secretKey').value;
+    var recaptchaResponse = grecaptcha.getResponse(); // Obtener la respuesta de reCAPTCHA
 
-            // Verificar que se haya completado reCAPTCHA
-            if (recaptchaResponse.length === 0) {
-                document.getElementById('statusMessage').innerHTML = "Por favor, confirma que no eres un robot.";
-                return;
-            }
-            console.log("Datos del formulario antes de enviarlos:", { dni, comision, email, secretKey });
-            // Obtener la ubicación del usuario
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var lat = position.coords.latitude;
-                    var lng = position.coords.longitude;
+    // Verificar que se haya completado reCAPTCHA
+    if (recaptchaResponse.length === 0) {
+        document.getElementById('statusMessage').innerHTML = "Por favor, confirma que no eres un robot.";
+        return;
+    }
 
-                     // Registrar ubicación
-                    console.log("Ubicación obtenida:", { lat, lng });
-                    // Construir la URL con los parámetros
-                    var url = `https://script.google.com/macros/s/AKfycbwSfcu_6pjwbyhzwb92PHltWzljdRUhEjij7CtrMrNmzK8hIpiyWNoh1M8MtlpCtVZYEg/exec?dni=${dni}&comision=${comision}&email=${email}&lat=${lat}&lng=${lng}&secretKey=${secretKey}`;
+    // Obtener la ubicación del usuario
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
 
- // Hacer la solicitud al script de Google Apps
-            fetch(url,
-                {
-    method: 'GET',  // o 'POST'
-    mode: 'cors',   // Usa 'no-cors' solo si no necesitas recibir la respuesta
-})
-                .then(response => {
-                    // Verificar si la respuesta es exitosa
-                    if (!response.ok) {
-                        throw new Error("Error en la respuesta del servidor: " + response.statusText);
-                    }
-                    return response.text(); // Si la respuesta es de tipo texto
-                })
-                .then(data => {
-                    console.log("Respuesta del servidor:", data); // Ver la respuesta completa del servidor
-                    document.getElementById('statusMessage').innerHTML = "Registro exitoso";
-                })
-                .catch(error => {
-                    console.log("Error al enviar datos:", error); // Ver error en la consola
-                    document.getElementById('statusMessage').innerHTML = "Hubo un error al registrar los datos.";
-                });
+            // Construir la URL del Google Apps Script (sin parámetros en la URL, ya que usaremos POST)
+            var url = `https://script.google.com/macros/s/AKfycbwlmLm7ETAFiH5Gm1mKZLLpvGXJbW0biPME5_seVz9mbFMq2BiPkqvKfpzFXOTHIDhkaw/exec`;
+
+            // Usamos fetch con POST para enviar los datos de forma más segura
+            fetch(url, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    dni: dni,
+                    comision: comision,
+                    email: email,
+                    lat: lat,
+                    lng: lng,
+                    secretKey: secretKey,
+                    recaptchaResponse: recaptchaResponse
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(response => response.json())  // Asegúrate de que el script de Google Apps retorne una respuesta JSON
+            .then(data => {
+                console.log("Respuesta del servidor:", data);
+                if (data.status === 'success') {
+                    document.getElementById('statusMessage').innerHTML = "Registro exitoso.";
+                } else {
+                    document.getElementById('statusMessage').innerHTML = "Error: " + data.message;
+                }
+            })
+            .catch(error => {
+                console.log("Error al enviar datos:", error);
+                document.getElementById('statusMessage').innerHTML = "Hubo un error al registrar los datos.";
+            });
         }, function(error) {
-            console.log("Error al obtener ubicación:", error); // Ver error de geolocalización
+            console.log("Error al obtener ubicación:", error);
             document.getElementById('statusMessage').innerHTML = "Error al obtener la ubicación. Por favor, permite el acceso a tu ubicación.";
         });
     } else {
