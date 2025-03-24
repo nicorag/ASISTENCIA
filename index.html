@@ -4,95 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Asistencia</title>
-        <!--  script de reCAPTCHA -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>  
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #statusMessage {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>  
 </head>
 <body>
-    <h2>Formulario de Registro</h2>
-    <form id="registroForm">
-        <label for="dni">DNI:</label><br>
-        <input type="text" id="dni" name="dni" required><br><br>
+    <div class="container">
+        <h2>Registro de Asistencia</h2>
+        <form id="registroForm">
+            <label for="dni">DNI:</label>
+            <input type="text" id="dni" name="dni" required>
 
-        <label for="comision">Comisión:</label><br>
-        <input type="text" id="comision" name="comision" required><br><br>
+            <label for="comision">Comisión:</label>
+            <input type="text" id="comision" name="comision" required>
 
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
 
-        <label for="secretKey">Clave Secreta:</label><br>
-        <input type="password" id="secretKey" name="secretKey" required><br><br>
-             <!-- reCAPTCHA -->
-        <div class="g-recaptcha" data-sitekey="6LcaePgqAAAAAI_PA8wnwMoLCot97an2tDfC2fDB"></div><br><br>
-        <button type="submit">Registrar</button>
-    </form>
+            <label for="secretKey">Clave Secreta:</label>
+            <input type="password" id="secretKey" name="secretKey" required>
+                
+            <div class="g-recaptcha" data-sitekey="6LcaePgqAAAAAI_PA8wnwMoLCot97an2tDfC2fDB"></div>
+            
+            <div style="height: 20px;"></div>
+            <button type="submit">Registrar</button>
+        </form>
 
-    <div id="statusMessage"></div>
+        <div class="loading" id="loading">
+            <p>Procesando solicitud, por favor espere...</p>
+        </div>
+
+        <div id="statusMessage"></div>
+    </div>
 
     <script>
       document.getElementById('registroForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+        e.preventDefault();
+        
+        // Ocultar mensajes anteriores y mostrar carga
+        document.getElementById('statusMessage').innerHTML = "";
+        document.getElementById('statusMessage').className = "";
+        document.getElementById('loading').style.display = 'block';
 
-    // Obtener los valores del formulario
-    var dni = document.getElementById('dni').value;
-    var comision = document.getElementById('comision').value;
-    var email = document.getElementById('email').value;
-    var secretKey = document.getElementById('secretKey').value;
-    var recaptchaResponse = grecaptcha.getResponse(); // Obtener la respuesta de reCAPTCHA
+        // Obtener los valores del formulario
+        var dni = document.getElementById('dni').value;
+        var comision = document.getElementById('comision').value;
+        var email = document.getElementById('email').value;
+        var secretKey = document.getElementById('secretKey').value;
+        var recaptchaResponse = grecaptcha.getResponse();
 
-    // Verificar que se haya completado reCAPTCHA
-    if (recaptchaResponse.length === 0) {
-        document.getElementById('statusMessage').innerHTML = "Por favor, confirma que no eres un robot.";
-        return;
-    }
+        // Verificar que se haya completado reCAPTCHA
+        if (recaptchaResponse.length === 0) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('statusMessage').innerHTML = "Por favor, confirma que no eres un robot.";
+            document.getElementById('statusMessage').className = "error";
+            return;
+        }
 
-    // Obtener la ubicación del usuario
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            var lat = position.coords.latitude;
-            var lng = position.coords.longitude;
+        // Obtener la ubicación del usuario
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    enviarDatos(dni, comision, email, secretKey, recaptchaResponse, lat, lng);
+                }, 
+                function(error) {
+                    console.log("Error al obtener ubicación:", error);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('statusMessage').innerHTML = "Error al obtener la ubicación. Por favor, permite el acceso a tu ubicación.";
+                    document.getElementById('statusMessage').className = "error";
+                },
+                { timeout: 10000 } // 10 segundos de timeout para geolocalización
+            );
+        } else {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('statusMessage').innerHTML = "La geolocalización no es soportada por este navegador.";
+            document.getElementById('statusMessage').className = "error";
+        }
+      });
 
-            // Construir la URL del Google Apps Script (sin parámetros en la URL, ya que usaremos POST)
-            var url = `https://script.google.com/macros/s/AKfycbzoUF-lVjk2T_0cvakyTn7KaD_PCA2cFibKzfvptBqjiyBpGHu9mIJXU7WEQHc-Nepiaw/exec`;
+      function enviarDatos(dni, comision, email, secretKey, recaptchaResponse, lat, lng) {
+        // URL del Google Apps Script
+        var url = 'https://script.google.com/macros/s/AKfycbzoUF-lVjk2T_0cvakyTn7KaD_PCA2cFibKzfvptBqjiyBpGHu9mIJXU7WEQHc-Nepiaw/exec';
 
-            // Usamos fetch con POST para enviar los datos de forma más segura
-            fetch(url, {
-                redirect: 'follow',
-                method: 'POST',
-                body: JSON.stringify({
-                    dni: dni,
-                    comision: comision,
-                    email: email,
-                    lat: lat,
-                    lng: lng,
-                    secretKey: secretKey,
-                    recaptchaResponse: recaptchaResponse
-                }),
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8'
-                }
-            })
-            .then(response => response.json())  // Asegúrate de que el script de Google Apps retorne una respuesta JSON
-            .then(data => {
-                console.log("Respuesta del servidor:", data);
-                if (data.status === 'success') {
-                    document.getElementById('statusMessage').innerHTML = "Registro exitoso.";
-                } else {
-                    document.getElementById('statusMessage').innerHTML = "Error: " + data.message;
-                }
-            })
-            .catch(error => {
-                console.log("Error al enviar datos:", error);
-                document.getElementById('statusMessage').innerHTML = "Hubo un error al registrar los datos.";
-            });
-        }, function(error) {
-            console.log("Error al obtener ubicación:", error);
-            document.getElementById('statusMessage').innerHTML = "Error al obtener la ubicación. Por favor, permite el acceso a tu ubicación.";
+        // Datos a enviar
+        var datos = {
+            dni: dni,
+            comision: comision,
+            email: email,
+            lat: lat,
+            lng: lng,
+            secretKey: secretKey,
+            recaptchaResponse: recaptchaResponse
+        };
+
+        // Enviar la solicitud
+        fetch(url, {
+            redirect: 'follow',
+            method: 'POST',
+            body: JSON.stringify(datos),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            console.log("Respuesta del servidor:", data);
+            
+            if (data.status === 'success') {
+                document.getElementById('statusMessage').innerHTML = "✅ Registro exitoso.";
+                document.getElementById('statusMessage').className = "success";
+                document.getElementById('registroForm').reset();
+                grecaptcha.reset();
+            } else {
+                document.getElementById('statusMessage').innerHTML = "❌ Error: " + data.message;
+                document.getElementById('statusMessage').className = "error";
+            }
+        })
+        .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            console.log("Error al enviar datos:", error);
+            document.getElementById('statusMessage').innerHTML = "❌ Hubo un error al registrar los datos: " + error.message;
+            document.getElementById('statusMessage').className = "error";
         });
-    } else {
-        console.log("Geolocalización no soportada.");
-        document.getElementById('statusMessage').innerHTML = "La geolocalización no es soportada por este navegador.";
-    }
-});
-</script>
+      }
+    </script>
 </body>
 </html>
